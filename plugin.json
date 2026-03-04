@@ -1,0 +1,13 @@
+{
+  "id": "audioSwitcher",
+  "name": "Audio Switcher",
+  "author": "User",
+  "description": "Quickly toggle between Headset and Stereo sinks",
+  "capabilities": ["dankbar-widget"],
+  "icon": "widgets",
+  "type": "widget",
+  "version": "1.0",
+  "component": "./main.qml",
+  "settings": "./AudioSwitcherSettings.qml",
+  "permissions": ["settings_read", "settings_write"]
+}
