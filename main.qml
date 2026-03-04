@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell.Services.Pipewire
 import qs.Services
 import qs.Modules.Plugins
+import Quickshell.Io
 
 PluginComponent {
     id: root
@@ -67,6 +68,24 @@ PluginComponent {
         target: Pipewire.nodes
         function onValuesChanged() {
             root.setSinks();
+        }
+    }
+
+    FileView {
+        path: "/tmp/dms-plugin-audio-switcher"
+        watchChanges: true
+        atomicWrites: false
+        onFileChanged: {
+            this.reload();
+        }
+        onLoaded: {
+            const text = this.text();
+            if (text.trim() !== "") {
+                console.info("Audio switch triggered due to content changes in the file: /tmp/dms-plugin-audio-switcher");
+                root.toggle();
+                this.setText("");
+            }
+            this.reload();
         }
     }
 
