@@ -31,3 +31,14 @@ Example Hyprland keybind:
 ```ini
 bind = $mod, F9, exec, echo "1" > /tmp/audio-switcher-toggle
 ```
+
+## Screenshots
+
+| Horizontal                   | Vertical                       | Settings                       |
+| ---------------------- | ---------------------------------- | ---------------------------------- |
+| <img width="122" height="42" alt="image" src="https://github.com/user-attachments/assets/957d1ecf-4dc9-4e3d-abce-db636c4608d2" />    | <img width="42" height="192" alt="image" src="https://github.com/user-attachments/assets/a3f56350-258d-4c27-a4cb-c096ee340a45" />             | <img  height="350" alt="image" src="https://github.com/user-attachments/assets/2b6f86af-95d1-42b4-b8fe-aef606fbb5df" /> |
+
+
+
+
+
