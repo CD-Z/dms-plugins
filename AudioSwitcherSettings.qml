@@ -1,6 +1,8 @@
 import QtQuick
 import Quickshell.Services.Pipewire
 import qs.Services
+import qs.Common
+import qs.Widgets
 import qs.Modules.Plugins
 
 PluginSettings {
@@ -47,17 +49,21 @@ PluginSettings {
         }
     }
 
+    StyledText {
+        text: "Hint: Rename your audio devices in System > Audio"
+        font.pixelSize: Theme.fontSizeSmall
+        color: Theme.surfaceText
+    }
+
     SelectionSetting {
         settingKey: "headsetSink"
         label: "Audio device 1"
-        description: "Widget appearance"
         options: root.outputDevices
         defaultValue: root.outputDevices[0].value ?? "No devices found"
     }
     SelectionSetting {
         settingKey: "stereoSink"
         label: "Audio device 2"
-        description: "Widget appearance"
         options: root.outputDevices
         defaultValue: root.outputDevices[1].value ?? "No devices found"
     }

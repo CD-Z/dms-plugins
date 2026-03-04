@@ -2,7 +2,7 @@
   "id": "audioSwitcher",
   "name": "Audio Switcher",
   "author": "User",
-  "description": "Quickly toggle between Headset and Stereo sinks",
+  "description": "Quickly toggle between different sinks",
   "capabilities": ["dankbar-widget"],
   "icon": "widgets",
   "type": "widget",
