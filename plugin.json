@@ -1,7 +1,7 @@
 {
   "id": "audioSwitcher",
   "name": "Audio Switcher",
-  "author": "User",
+  "author": "CD-Z",
   "description": "Quickly toggle between different sinks",
   "capabilities": ["dankbar-widget"],
   "icon": "widgets",
