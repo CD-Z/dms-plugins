@@ -22,19 +22,26 @@ PluginComponent {
     property string stereoSinkName: ""
 
     // 3. Current device logic
-    readonly property string currentDevice: {
+    property string currentDevice: setCurrentDevice()
+
+    property string currentDeviceName: ""
+
+    function setCurrentDevice() {
         const current = AudioService.sink;
-        if (!current || !current.name)
-            return "unknown";
+        var newCurrentDevice = "unknown";
+        var newCurrentName = "Audio";
 
-        // Compare against the raw system name from settings
-        if (current.name === settingsSinkHeadset)
-            return "headset";
-        if (current.name === settingsSinkStereo)
-            return "stereo";
-        return "unknown";
+        if (current.name === settingsSinkHeadset) {
+            newCurrentDevice = "headset";
+            newCurrentName = headsetSinkName;
+        }
+        if (current.name === settingsSinkStereo) {
+            newCurrentDevice = "stereo";
+            newCurrentName = stereoSinkName;
+        }
+        root.currentDeviceName = newCurrentName;
+        return newCurrentDevice;
     }
-
     // 4. Centralized update function
     function setSinks() {
         // Don't run if settings aren't loaded yet
@@ -100,8 +107,8 @@ PluginComponent {
             id: pillContainer
             readonly property int pad: Theme.spacingXS
 
-            property string activeName: root.currentDevice === "headset" ? root.headsetSinkName : (root.currentDevice === "stereo" ? root.stereoSinkName : "Audio")
-            property string displayName: ""
+            property string activeName: root.currentDeviceName
+            property string displayName: activeName
             property var displayIcon: getAudioDeviceIcon()
 
             width: hContent.implicitWidth + pad * 2
@@ -224,8 +231,8 @@ PluginComponent {
             id: pillContainer
             readonly property int pad: Theme.spacingXS
 
-            property string activeName: root.currentDevice === "headset" ? root.headsetSinkName : (root.currentDevice === "stereo" ? root.stereoSinkName : "Audio")
-            property string displayName: ""
+            property string activeName: root.currentDeviceName
+            property string displayName: activeName
             property var displayIcon: getAudioDeviceIcon()
 
             width: Math.max(vIcon.implicitWidth, vLabel.implicitWidth) + pad * 2
