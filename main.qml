@@ -97,41 +97,40 @@ PluginComponent {
     // Horizontal bar pill
     horizontalBarPill: Component {
         Item {
-            readonly property int pad: Theme.spacingS
+            id: pillContainer
+            readonly property int pad: Theme.spacingXS
 
-            implicitWidth: hContent.implicitWidth + pad * 2
-            implicitHeight: Math.max(Theme.iconSize, Theme.fontSizeSmall) + pad * 2
+            property string activeName: root.currentDevice === "headset" ? root.headsetSinkName : (root.currentDevice === "stereo" ? root.stereoSinkName : "Audio")
+            property string displayName: ""
+            property var displayIcon: getAudioDeviceIcon()
 
-            Row {
-                id: hContent
-                anchors.centerIn: parent
-                spacing: Theme.spacingS
+            width: hContent.implicitWidth + pad * 2
+            height: Math.max(Theme.iconSize, Theme.fontSizeSmall) + pad * 2
+            implicitWidth: width
+            implicitHeight: height
+            clip: false
 
-                DankIcon {
-                    name: getAudioDeviceIcon(AudioService.sink)
-                    size: Theme.iconSize
-                    color: Theme.surfaceText
-                    anchors.verticalCenter: parent.verticalCenter
+            // This triggers the "slide" whenever the name changes
+            onActiveNameChanged: {
+                slideAnimation.restart();
+            }
 
-                    function getAudioDeviceIcon(device) {
-                        if (!device?.name)
-                            return "speaker";
-                        const name = device.name.toLowerCase();
-                        if (name.includes("bluez") || name.includes("bluetooth"))
-                            return "headset";
-                        if (name.includes("hdmi"))
-                            return "tv";
-                        if (name.includes("usb"))
-                            return "headset";
-                        return "speaker";
-                    }
-                }
+            function getAudioDeviceIcon() {
+                const device = AudioService.sink;
+                if (!device?.name)
+                    return "speaker";
+                const name = device.name.toLowerCase();
+                if (name.includes("bluez") || name.includes("bluetooth") || name.includes("usb"))
+                    return "headset";
+                if (name.includes("hdmi"))
+                    return "tv";
+                return "speaker";
+            }
 
-                StyledText {
-                    text: root.currentDevice === "headset" ? root.headsetSinkName : (root.currentDevice === "stereo" ? root.stereoSinkName : "Audio")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.surfaceText
-                    anchors.verticalCenter: parent.verticalCenter
+            Behavior on width {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.InOutQuad
                 }
             }
 
@@ -140,6 +139,81 @@ PluginComponent {
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
                 onClicked: root.toggle()
+            }
+
+            Row {
+                id: hContent
+                anchors.centerIn: parent
+                spacing: Theme.spacingS
+
+                DankIcon {
+                    name: pillContainer.displayIcon
+                    size: Theme.iconSize
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                StyledText {
+                    text: pillContainer.displayName
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.surfaceText
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+            }
+
+            SequentialAnimation {
+                id: slideAnimation
+                readonly property int sDuration: 150
+                readonly property int lDuration: 200
+
+                // 1. Slide down and fade out
+                ParallelAnimation {
+                    NumberAnimation {
+                        target: hContent
+                        property: "opacity"
+                        to: 0
+                        duration: slideAnimation.sDuration
+                    }
+                    NumberAnimation {
+                        target: hContent
+                        property: "anchors.horizontalCenterOffset"
+                        to: 20
+                        duration: slideAnimation.sDuration
+                        easing.type: Easing.InQuad
+                    }
+                }
+
+                // 2. Replace old Content
+                ScriptAction {
+                    script: {
+                        pillContainer.displayName = pillContainer.activeName;
+                        pillContainer.displayIcon = pillContainer.getAudioDeviceIcon();
+                    }
+                }
+
+                // 3. Snap to top (invisible)
+                PropertyAction {
+                    target: hContent
+                    property: "anchors.horizontalCenterOffset"
+                    value: -20
+                }
+
+                // 4. Slide into place and fade in
+                ParallelAnimation {
+                    NumberAnimation {
+                        target: hContent
+                        property: "opacity"
+                        to: 1
+                        duration: slideAnimation.lDuration
+                    }
+                    NumberAnimation {
+                        target: hContent
+                        property: "anchors.horizontalCenterOffset"
+                        to: 0
+                        duration: slideAnimation.lDuration
+                        easing.type: Easing.OutQuad
+                    }
+                }
             }
         }
     }
@@ -150,18 +224,45 @@ PluginComponent {
             id: pillContainer
             readonly property int pad: Theme.spacingXS
 
-            // Track the current device name to trigger the animation
             property string activeName: root.currentDevice === "headset" ? root.headsetSinkName : (root.currentDevice === "stereo" ? root.stereoSinkName : "Audio")
+            property string displayName: ""
+            property var displayIcon: getAudioDeviceIcon()
 
             width: Math.max(vIcon.implicitWidth, vLabel.implicitWidth) + pad * 2
             height: vIcon.implicitHeight + vLabel.implicitHeight + pad * 3
             implicitWidth: width
             implicitHeight: height
-            clip: true
+            clip: false
 
             // This triggers the "slide" whenever the name changes
             onActiveNameChanged: {
                 slideAnimation.restart();
+            }
+
+            function getAudioDeviceIcon() {
+                const device = AudioService.sink;
+                if (!device?.name)
+                    return "speaker";
+                const name = device.name.toLowerCase();
+                if (name.includes("bluez") || name.includes("bluetooth") || name.includes("usb"))
+                    return "headset";
+                if (name.includes("hdmi"))
+                    return "tv";
+                return "speaker";
+            }
+
+            Behavior on height {
+                NumberAnimation {
+                    duration: 250
+                    easing.type: Easing.InOutQuad
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.toggle()
             }
 
             Column {
@@ -169,51 +270,32 @@ PluginComponent {
                 anchors.centerIn: parent
                 spacing: Theme.spacingXS
 
-                // We animate the Y position of the whole content
-                // or just the internal elements.
-
                 DankIcon {
                     id: vIcon
-                    name: getAudioDeviceIcon(AudioService.sink)
+                    name: pillContainer.displayIcon
                     size: Theme.iconSize
                     color: Theme.surfaceText
                     anchors.horizontalCenter: parent.horizontalCenter
-
-                    // Add a slide behavior
-                    Behavior on y {
-                        NumberAnimation {
-                            duration: 300
-                            easing.type: Easing.OutBack
-                        }
-                    }
-
-                    function getAudioDeviceIcon(device) {
-                        if (!device?.name)
-                            return "speaker";
-                        const name = device.name.toLowerCase();
-                        if (name.includes("bluez") || name.includes("bluetooth") || name.includes("usb"))
-                            return "headset";
-                        if (name.includes("hdmi"))
-                            return "tv";
-                        return "speaker";
-                    }
                 }
 
                 StyledText {
                     id: vLabel
-                    text: pillContainer.activeName
+                    text: pillContainer.displayName
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.surfaceVariantText
                     anchors.horizontalCenter: parent.horizontalCenter
                     horizontalAlignment: Text.AlignHCenter
+                    width: 1
+                    wrapMode: Text.WrapAnywhere
+                    lineHeight: 1
+                    maximumLineCount: 20
                 }
             }
 
-            // The "Sliding" logic:
-            // Instead of complex state machines, we can use a SequentialAnimation
-            // that moves the content out, switches text, and snaps back.
             SequentialAnimation {
                 id: slideAnimation
+                readonly property int sDuration: 150
+                readonly property int lDuration: 200
 
                 // 1. Slide down and fade out
                 ParallelAnimation {
@@ -221,37 +303,46 @@ PluginComponent {
                         target: mainColumn
                         property: "opacity"
                         to: 0
-                        duration: 150
+                        duration: slideAnimation.sDuration
                     }
                     NumberAnimation {
                         target: mainColumn
                         property: "anchors.verticalCenterOffset"
                         to: 20
-                        duration: 150
+                        duration: slideAnimation.sDuration
+                        easing.type: Easing.InQuad
                     }
                 }
 
-                // 2. Snap to top (invisible)
+                // 2. Replace old Content
+                ScriptAction {
+                    script: {
+                        pillContainer.displayName = pillContainer.activeName;
+                        pillContainer.displayIcon = pillContainer.getAudioDeviceIcon();
+                    }
+                }
+
+                // 3. Snap to top (invisible)
                 PropertyAction {
                     target: mainColumn
                     property: "anchors.verticalCenterOffset"
                     value: -20
                 }
 
-                // 3. Slide into place and fade in
+                // 4. Slide into place and fade in
                 ParallelAnimation {
                     NumberAnimation {
                         target: mainColumn
                         property: "opacity"
                         to: 1
-                        duration: 200
+                        duration: slideAnimation.lDuration
                     }
                     NumberAnimation {
                         target: mainColumn
                         property: "anchors.verticalCenterOffset"
                         to: 0
-                        duration: 200
-                        easing.type: Easing.OutCubic
+                        duration: slideAnimation.lDuration
+                        easing.type: Easing.OutQuad
                     }
                 }
             }
