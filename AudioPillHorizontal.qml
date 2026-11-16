@@ -11,8 +11,6 @@ Item {
     property string deviceName: ""
     property string deviceIcon: "speaker"
 
-    signal toggle
-
     property string _displayName: deviceName
     property string _displayIcon: deviceIcon
 
@@ -22,19 +20,13 @@ Item {
     implicitHeight: height
 
     onDeviceNameChanged: slideAnimation.restart()
+    onDeviceIconChanged: slideAnimation.restart()
 
     Behavior on width {
         NumberAnimation {
             duration: 250
             easing.type: Easing.InOutQuad
         }
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: pillContainer.toggle()
     }
 
     Row {

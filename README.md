@@ -14,22 +14,27 @@ speakers).
 
 ## Configuration
 
-You can change the two sinks in the plugin settings. The display names can be defined in the regular DMS settings.
+You can change the two sinks in the plugin settings. The display names can be defined in the regular DMS settings. Each output's bar icon can be set in the plugin settings; Automatic uses the device description.
 
 
 ## External Toggle
 
-DMS IPC does not expose plugin functions directly. To trigger the toggle
-externally (e.g. from a compositor keybind), use the file watcher approach:
+The pill toggles through the DMS widget IPC, so any external trigger can call it:
 
 ```bash
-echo "1" > /tmp/audio-switcher-toggle
+dms ipc call widget toggle audioSwitcher
 ```
 
 Example Hyprland keybind:
 
 ```ini
-bind = $mod, F9, exec, echo "1" > /tmp/audio-switcher-toggle
+bind = $mod, F9, exec, dms ipc call widget toggle audioSwitcher
+```
+
+Example Niri keybind:
+
+```kdl
+Mod+F9 { spawn "dms" "ipc" "call" "widget" "toggle" "audioSwitcher"; }
 ```
 
 ## Screenshots

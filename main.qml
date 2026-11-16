@@ -3,13 +3,16 @@ import QtQuick
 import Quickshell.Services.Pipewire
 import qs.Services
 import qs.Modules.Plugins
-import Quickshell.Io
 
 PluginComponent {
     id: root
 
+    pillClickAction: () => root.toggle()
+
     readonly property string settingsSinkStereo: pluginData.stereoSink ?? ""
     readonly property string settingsSinkHeadset: pluginData.headsetSink ?? ""
+    readonly property string settingsHeadsetIcon: pluginData.headsetIcon ?? "auto"
+    readonly property string settingsStereoIcon: pluginData.stereoIcon ?? "auto"
 
     property var headsetSink: null
     property var stereoSink: null
@@ -33,31 +36,36 @@ PluginComponent {
         return "Audio";
     }
 
-    function getAudioDeviceIcon() {
-        const name = AudioService.sink?.name.toLowerCase() ?? "";
-        if (name.includes("bluez") || name.includes("bluetooth") || name.includes("usb"))
+    readonly property string currentIcon: {
+        if (currentDevice === "headset" && settingsHeadsetIcon && settingsHeadsetIcon !== "auto")
+            return settingsHeadsetIcon;
+        if (currentDevice === "stereo" && settingsStereoIcon && settingsStereoIcon !== "auto")
+            return settingsStereoIcon;
+        return autoDeviceIcon();
+    }
+
+    function autoDeviceIcon() {
+        const sink = AudioService.sink;
+        if (!sink)
+            return "speaker";
+        const label = (sink.description || sink.name || "").toLowerCase();
+        if (label.includes("headset") || label.includes("headphone") || label.includes("bluez") || label.includes("bluetooth") || label.includes("usb"))
             return "headset";
-        if (name.includes("hdmi"))
+        if (label.includes("hdmi") || label.includes("tv"))
             return "tv";
         return "speaker";
     }
 
     function setSinks() {
-        if (!settingsSinkHeadset || !settingsSinkStereo)
-            return;
-
         const sinks = Array.from(Pipewire.nodes.values);
-        const hSink = sinks.find(n => n.name === settingsSinkHeadset);
-        const sSink = sinks.find(n => n.name === settingsSinkStereo);
 
-        if (hSink) {
-            headsetSink = hSink;
-            headsetSinkName = AudioService.displayName(hSink);
-        }
-        if (sSink) {
-            stereoSink = sSink;
-            stereoSinkName = AudioService.displayName(sSink);
-        }
+        const hSink = settingsSinkHeadset ? sinks.find(n => n.name === settingsSinkHeadset) : null;
+        headsetSink = hSink ?? null;
+        headsetSinkName = hSink ? AudioService.displayName(hSink) : "";
+
+        const sSink = settingsSinkStereo ? sinks.find(n => n.name === settingsSinkStereo) : null;
+        stereoSink = sSink ?? null;
+        stereoSinkName = sSink ? AudioService.displayName(sSink) : "";
     }
 
     onSettingsSinkStereoChanged: setSinks()
@@ -68,24 +76,6 @@ PluginComponent {
         target: Pipewire.nodes
         function onValuesChanged() {
             root.setSinks();
-        }
-    }
-
-    FileView {
-        path: "/tmp/dms-plugin-audio-switcher"
-        watchChanges: true
-        atomicWrites: false
-        onFileChanged: {
-            this.reload();
-        }
-        onLoaded: {
-            const text = this.text();
-            if (text.trim() !== "") {
-                console.info("Audio switch triggered due to content changes in the file: /tmp/dms-plugin-audio-switcher");
-                root.toggle();
-                this.setText("");
-            }
-            this.reload();
         }
     }
 
@@ -109,16 +99,14 @@ PluginComponent {
     horizontalBarPill: Component {
         AudioPillHorizontal {
             deviceName: root.currentDeviceName
-            deviceIcon: root.getAudioDeviceIcon()
-            onToggle: root.toggle()
+            deviceIcon: root.currentIcon
         }
     }
 
     verticalBarPill: Component {
         AudioPillVertical {
             deviceName: root.currentDeviceName
-            deviceIcon: root.getAudioDeviceIcon()
-            onToggle: root.toggle()
+            deviceIcon: root.currentIcon
         }
     }
 }

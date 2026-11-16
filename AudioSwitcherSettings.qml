@@ -11,6 +11,21 @@ PluginSettings {
 
     property var outputDevices: []
 
+    readonly property var iconOptions: [
+        { label: "Automatic", value: "auto" },
+        { label: "Headset", value: "headset" },
+        { label: "Headphones", value: "headphones" },
+        { label: "Speaker", value: "speaker" },
+        { label: "TV", value: "tv" },
+        { label: "Monitor", value: "monitor" },
+        { label: "Laptop", value: "laptop" },
+        { label: "Phone", value: "smartphone" },
+        { label: "Bluetooth", value: "bluetooth" },
+        { label: "Gamepad", value: "sports_esports" },
+        { label: "Radio", value: "radio" },
+        { label: "Record player", value: "album" }
+    ]
+
     // Current saved values
     property string selectedHeadset: pluginData.headsetSink || ""
     property string selectedStereo: pluginData.stereoSink || ""
@@ -53,13 +68,27 @@ PluginSettings {
         settingKey: "headsetSink"
         label: "Audio device 1"
         options: root.outputDevices
-        defaultValue: root.outputDevices[0].value ?? "No devices found"
+        defaultValue: root.outputDevices[0]?.value ?? ""
     }
     SelectionSetting {
         settingKey: "stereoSink"
         label: "Audio device 2"
         options: root.outputDevices
-        defaultValue: root.outputDevices[1].value ?? "No devices found"
+        defaultValue: root.outputDevices[1]?.value ?? ""
+    }
+    SelectionSetting {
+        settingKey: "headsetIcon"
+        label: "Audio device 1 icon"
+        description: "Icon shown when device 1 is the active output"
+        options: root.iconOptions
+        defaultValue: "auto"
+    }
+    SelectionSetting {
+        settingKey: "stereoIcon"
+        label: "Audio device 2 icon"
+        description: "Icon shown when device 2 is the active output"
+        options: root.iconOptions
+        defaultValue: "auto"
     }
     StyledText {
         text: "Hint: Rename your audio devices in System > Audio"
@@ -78,7 +107,7 @@ PluginSettings {
         color: Theme.surfaceText
     }
     StyledText {
-        text: "This plugin watches the file '/tmp/dms-plugin-audio-switcher'. If you write anything into this file, the audio devices will be switched and the file cleared."
+        text: "This plugin toggles through the DMS widget IPC."
         font.pixelSize: Theme.fontSizeSmall
         color: Theme.surfaceVariantText
         width: parent.width
@@ -102,7 +131,7 @@ PluginSettings {
             spacing: Theme.spacingM
 
             StyledText {
-                text: `echo "1" > /tmp/dms-plugin-audio-switcher`
+                text: `dms ipc call widget toggle audioSwitcher\n\nHyprland: bind = $mod, F9, exec, dms ipc call widget toggle audioSwitcher\n\nNiri: Mod+F9 { spawn "dms" "ipc" "call" "widget" "toggle" "audioSwitcher"; }`
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.surfaceVariantText
                 width: parent.width
